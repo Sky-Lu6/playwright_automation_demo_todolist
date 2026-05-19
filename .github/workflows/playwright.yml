@@ -1,0 +1,38 @@
+name: Playwright Tests
+
+# 触发时机：每次 push 到 main 分支、或提交 Pull Request 时自动运行
+# 这就是"持续集成（CI）"——开发每次改完代码，自动跑一遍全部测试做回归，
+# 不用人工手动跑。面试讲到"回归测试"时可以提这个，加分。
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 安装 Playwright 浏览器
+        run: npx playwright install --with-deps
+
+      - name: 运行所有测试
+        run: npx playwright test
+
+      - name: 上传测试报告
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
